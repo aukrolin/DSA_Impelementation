@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <iostream>
 #include <string>
+#include <chrono>
+
+
 
 #pragma GCC optimize(3)
 /**
@@ -16,7 +19,7 @@
 using std::pair;
 
 
-
+int x;
 
 template <typename _Key, typename _Mapped, typename _Cmp = std::less<_Key>>
 class Rb_tree {
@@ -61,7 +64,7 @@ _Cmp cmp;
     void  _Dir_Rotate_at_root(Node * P ,/*root of target subtree;*/ int8_t dir ) {
         Node* G = P->parent;
         Node* Q = P->child[dir^1];
-        if(Q==Nil) {std::cout << "ERROR";}
+        // if(Q==Nil) {std::cout << "Rotation No Q ERROR";}//Debug
 
         Node* B = Q->child[dir];
 
@@ -150,6 +153,9 @@ _Cmp cmp;
         struct Node* S;  // -> sibling of N
         struct Node* C;  // -> close   nephew
         struct Node* D;  // -> distant nephew
+
+        Ndir = Dir(N);
+        delete N;
     Delete_Case_1:
         // Case P is root
         if (P == NIL) {
@@ -157,12 +163,12 @@ _Cmp cmp;
         }
         Ndir = Dir(N);
         P->child[Ndir] = Nil;// delete N
+
     Delete_Case_2:
         S = P->child[Ndir^1];
-        if (S==Nil) {
-            std::cout << "ERROR\n";
-
-        }
+        // if (S==Nil) {
+        //     std::cout << "Delete Case 2 No S ERROR\n";
+        // } Debug 
         D = S->child[Ndir^1];
         C = S->child[Ndir];
 
@@ -173,7 +179,10 @@ _Cmp cmp;
             S->color = BLACK;
             P->color = RED; 
             S = C;
+            D = S->child[Ndir^1];
+            C = S->child[Ndir];
         }
+
     Delete_Case_3:
     // from now on S is BLACK
         // std::cout << S->key;
@@ -206,7 +215,11 @@ _Cmp cmp;
                 S->color = RED;
                 N=P;
                 P=N->parent;
-                goto Delete_Case_1;
+                if  (P!=NIL){ 
+                    Ndir = Dir(N);
+                    goto Delete_Case_2;
+                }
+                else return;
             }
         }
 
@@ -239,22 +252,24 @@ _Cmp cmp;
             N->left->parent = N->parent;
             N->left->color = BLACK;
             N->parent->child[Dir(N)] = N->left;//N
-
+            delete N;
         } else if(N->right){
             N->right->parent = N->parent;
             N->right->color = BLACK;
             N->parent->child[Dir(N)] = N->right;//N
+            delete N;
         }else{
 
             if (N->parent == Nil) {
                 root = Nil;
+                delete N;
                 return;
             }
             if (N->color == RED){
                 N->parent->child[Dir(N)] = NIL;
+                delete N;
                 return;
             }
-            //ERROR IN 
             _RBT_delete_fix(N);
 
         }
@@ -283,6 +298,68 @@ _Cmp cmp;
         }
         return Nil;
 
+    }
+
+    void print_tree() {
+        /*
+            Developer Debug
+        */
+        std::string s ;
+        std::cout<<root->key;
+        do{
+            std::cin>>s;
+
+            Node * N = _find(s);
+            std::cout << N->key;
+            std::cout << (N->color == RED ? "RED " : "BLACK ");
+
+            if (N->left) {
+                std::cout << N->left->key;    
+                std::cout << (N->left->color == RED ? "RED " : "BLACK "); 
+            }
+            if (N->right){
+                std::cout << N->right->key;
+                std::cout << (N->right->color == RED ? "RED " : "BLACK ");
+            }
+        }while (s[0] != 'e');
+            
+
+    }
+
+
+    bool _check_black_height(Node* node, int& black_count) {
+        if (node == Nil) {
+            // 如果是葉節點 (Nil)，則返回黑色節點數量 1
+            black_count = 1;
+            return true;
+        }
+
+        int left_black_count = 0, right_black_count = 0;
+
+        // 檢查左子樹的黑色節點數量
+        bool left_valid = _check_black_height(node->child[0], left_black_count);
+        // 檢查右子樹的黑色節點數量
+        bool right_valid = _check_black_height(node->child[1], right_black_count);
+
+        if (!left_valid || !right_valid) {
+            return false;  // 如果任何一個子樹不合法，直接返回 false
+        }
+
+        // 確保左右子樹的黑色節點數量相同
+        if (left_black_count != right_black_count) {
+            // std::cout << "Different black heights between left and right subtree!" << std::endl;
+            return false;
+        }
+
+        // 根據當前節點的顏色，調整黑色節點的數量
+        if (node->color == BLACK) {
+            black_count = left_black_count + 1;  // 如果是黑色，則黑色節點數量 + 1
+        } else { 
+            if ((node->left != Nil && node->left->color == RED) || (node->right != Nil && node->right->color == RED)) return false;
+            black_count = left_black_count;  // 紅色節點不增加黑色節點數量
+        }
+
+        return true;
     }
 
 
@@ -394,37 +471,41 @@ public:
         }
         if ( cmp(_k, it->first)){
             it._setHere(Nil);
-            std::cout << "ERROR";
+            // std::cout << "Lower Bound find value less than begin ERROR";//DEBUG
             return it;
         }
         it._setHere(root);
         Node *N = root, *result = N;     
-        while (N) {
-            // printf("%d\n", N->key);
+        while (N != Nil) {  
             if (_k == N->key) {
-                it._setHere(N);
-                return it;
-            }
-            else if (cmp(_k, N->key)) {
-                if (N->left != Nil)N = N->left;
-                else break;
-
-            }
-            else {
-                if (N->right != Nil) N = N->right;
-                else break;
-            }
-            if (cmp(N->key, _k)) {
-                it._setHere(N);
+                return N; 
+            } else if (cmp(_k, N->key)) {  
+                N = N->left;
+            } else {  
+                N = N->right;
             }
         }
+
         return it;
 
     }
     int size(){
         return Size;
     }
-    
+    bool _is_valid_red_black_tree() {
+        if (root == Nil) return true;  // 空樹是合法的
+
+        // 檢查根節點是否是黑色
+        if (root->color != BLACK) {
+            std::cout << "Root is not black!" << std::endl;
+            return false;
+        }
+
+
+        // 檢查整棵樹的黑色高度是否一致
+        int black_count = 0;
+        return _check_black_height(root, black_count);
+    }
     
     _Mapped& insert(_Key _k, _Mapped _val) {
         Node* T = new Node();
@@ -471,42 +552,18 @@ public:
             _delete(N);
             Size--;
         } 
-        else std::cout << "No such Node" << std::endl;
+        // else std::cout << "No such Node" << std::endl; //Debug
     }
-    void print_tree() {
-        /*
-            Developer Debug
-        */
-        std::string s ;
-        std::cout<<root->key;
-        do{
-            std::cin>>s;
-
-            Node * N = _find(s);
-            std::cout << N->key;
-            std::cout << (N->color == RED ? "RED " : "BLACK ");
-
-            if (N->left) {
-                std::cout << N->left->key;    
-                std::cout << (N->left->color == RED ? "RED " : "BLACK "); 
-            }
-            if (N->right){
-                std::cout << N->right->key;
-                std::cout << (N->right->color == RED ? "RED " : "BLACK ");
-            }
-        }while (s[0] != 'e');
-            
-
-    }
-
     inline  Iterator find(const _Key& key){
         Node * N = _find(key);
         Iterator it = begin();
         it._setHere(N);
+        return it;
     }
     _Mapped& operator[](const _Key& key) {
         return insert(key, _Mapped());
     }
+
 };
 
 
@@ -515,35 +572,31 @@ public:
 
 int main(){
     Rb_tree<int,int> m;
-
-
-
-    int n;
-    std::cin >> n;
-    std::vector<int> v;
-    for (int i =0 ; i< n; i++) {
-        int tmp;
-        std::cin >>tmp;
-        v.push_back(tmp);
-        m[tmp] = 1;
+    int n = 1000000;
+    
+    int t=  time(0);
+    srand(t*8/7);
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i =0; i< n; i++){
+        m[i+6] = rand()%n;
     }
-    int i=0;
-    for (auto a:m){
-        m[a.first] = i++;
-    }
-    for (auto i : v){
-        std::cout << m[i] << ' ';
-    }
+    // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
+    // else std::cout << 1;
 
+    for (int i =0 ;i < n; i+=2){
+        m.delete_with_key(rand()%n);
+    }
+    // for (auto i : m) {
+    // }
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> duration = end - start;
+    // 輸出執行時間（秒）
+    std::cout << "Spent: " << duration.count()*(double)1000 << "ms" << std::endl;
 
     // std::cout <<  Rb.size();
 } 
 
 
-echo "# DSA_Impelementation" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M master
-git remote add origin git@github.com:aukrolin/DSA_Impelementation.git
-git push -u origin master
+
+// if(!_is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
