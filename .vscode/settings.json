@@ -70,6 +70,9 @@
         "forward_list": "cpp",
         "ratio": "cpp",
         "sstream": "cpp",
-        "csignal": "cpp"
-    }
+        "csignal": "cpp",
+        "stdc++.h": "c",
+        "random": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

@@ -578,7 +578,7 @@ public:
 #include <map>
 #include <unordered_map>
 int main(){
-    int n = (int)2e7;
+    int n = (int)1e6;
 
     Rb_tree<int,int> m;
     
@@ -591,7 +591,9 @@ int main(){
     // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
     // else std::cout << 1;
     for (int i =0 ;i < n; i+=2){
-        m.erase(rand()%n);
+        // m.erase(rand()%n);
+        m[rand()%n] = rand()%n;
+
     }
     // for (auto i : m) {`
     // }
@@ -609,7 +611,9 @@ int main(){
     // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
     // else std::cout << 1;
     for (int i =0 ;i < n; i+=2){
-        m1.erase(rand()%n);
+        // m1.erase(rand()%n);
+        m1[rand()%n] = rand()%n;
+
     }
     // for (auto i : m) {`
     // }
