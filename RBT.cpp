@@ -576,7 +576,6 @@ public:
 
 };
 #include <map>
-
 int main(){
     int n = (int)1e6;
 
@@ -600,6 +599,23 @@ int main(){
     printf("Spent: %.2fms\n", duration.count() * 1000.0);
 
 
+    std::map<int,int> m1;
+
+    start = std::chrono::high_resolution_clock::now();
+    for (int i =0; i< n; i++){
+        m1[rand()%n] = rand()%n;
+    }
+    // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
+    // else std::cout << 1;
+    for (int i =0 ;i < n; i+=2){
+        m1.erase(rand()%n);
+    }
+    // for (auto i : m) {`
+    // }
+    end = std::chrono::high_resolution_clock::now();
+    duration = end - start;
+    printf("Spent: %.2fms\n", duration.count() * 1000.0);
+    
     // std::cout <<  Rb.size();
 } 
 
