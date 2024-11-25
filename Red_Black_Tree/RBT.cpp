@@ -576,8 +576,9 @@ public:
 
 };
 #include <map>
+#include <unordered_map>
 int main(){
-    int n = (int)1e6;
+    int n = (int)2e7;
 
     Rb_tree<int,int> m;
     
@@ -599,7 +600,7 @@ int main(){
     printf("Spent: %.2fms\n", duration.count() * 1000.0);
 
 
-    std::map<int,int> m1;
+    std::unordered_map<int,int> m1;
 
     start = std::chrono::high_resolution_clock::now();
     for (int i =0; i< n; i++){
