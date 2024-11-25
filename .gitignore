@@ -1,2 +1,6 @@
+#binarys
 *.exe
+#test files
 a.*
+#settings
+.vscode

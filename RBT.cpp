@@ -240,7 +240,7 @@ _Cmp cmp;
         if (N->left && N->right) {
 
             Node* T = N->left;
-            while (T->right){
+            while (T&&T->right){
                 T=T->right;
             }
             N->key = T->key;
@@ -271,7 +271,6 @@ _Cmp cmp;
                 return;
             }
             _RBT_delete_fix(N);
-
         }
     }
 
@@ -497,7 +496,7 @@ public:
 
         // 檢查根節點是否是黑色
         if (root->color != BLACK) {
-            std::cout << "Root is not black!" << std::endl;
+            // std::cout << "Root is not black!\n" ;
             return false;
         }
 
@@ -546,7 +545,7 @@ public:
         return T->value;
     }
 
-    void delete_with_key(_Key _k){
+    void erase(_Key _k){
         Node* N = _find(_k);
         if (N){
             _delete(N);
@@ -564,35 +563,42 @@ public:
         return insert(key, _Mapped());
     }
 
+#undef BLACK
+#undef RED
+#undef LEFT
+#undef RIGHT
+#undef left
+#undef right
+#undef NIL
+#undef Nil
+#undef nil
+#undef Dir
+
 };
-
-
-
-
+#include <map>
 
 int main(){
+    int n = (int)1e6;
+
     Rb_tree<int,int> m;
-    int n = 1000000;
     
     int t=  time(0);
     srand(t*8/7);
     auto start = std::chrono::high_resolution_clock::now();
     for (int i =0; i< n; i++){
-        m[i+6] = rand()%n;
+        m[rand()%n] = rand()%n;
     }
     // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
     // else std::cout << 1;
-
     for (int i =0 ;i < n; i+=2){
-        m.delete_with_key(rand()%n);
+        m.erase(rand()%n);
     }
-    // for (auto i : m) {
+    // for (auto i : m) {`
     // }
     auto end = std::chrono::high_resolution_clock::now();
-
     std::chrono::duration<double> duration = end - start;
-    // 輸出執行時間（秒）
-    std::cout << "Spent: " << duration.count()*(double)1000 << "ms" << std::endl;
+    printf("Spent: %.2fms\n", duration.count() * 1000.0);
+
 
     // std::cout <<  Rb.size();
 } 

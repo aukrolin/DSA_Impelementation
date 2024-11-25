@@ -69,6 +69,7 @@
         "chrono": "cpp",
         "forward_list": "cpp",
         "ratio": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "csignal": "cpp"
     }
 }
