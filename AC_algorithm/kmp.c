@@ -29,17 +29,18 @@ char * input_string(unsigned len){
 int* build_fail_array(char *match){
     int len = strlen(match), now=0;
     int *fail = (int *)malloc((len + 1) * sizeof(int));
-    fail[0] = -1;//Fail Function a.k.a Longest Prefix subfix array
+    memset(fail,0,(len + 1) * sizeof(int));
+    fail[0] = 0;//Fail Function a.k.a Longest Prefix subfix array
     
 
-    // printf("%d ", fail[0]);
+    printf("%d ", fail[0]);
     //now point two lefts
     for (int i = 1; i < len; ++i) {
         while(now && match[now]!=match[i]) now=fail[now-1]; //easy to see
         if(match[now]==match[i]) fail[i]= ++now; 
-        // printf("%d ", fail[i]);
+        printf("%d ", fail[i]);
     }
-    // printf("\n");
+    printf("\n");
     return fail;
 }
 
@@ -64,20 +65,21 @@ void KMP(char *content, char *match){
 }
 
 int main() {
-    char *content = input_string(100);
-    char *match = input_string(20);
+    // char *content = input_string(100);
+    char *match = input_string(100);
 
-    // build_fail_array(match);
-    KMP(content,match);
-    printf("\n");
+    int *f = build_fail_array(match);
+    // KMP(content,match);
+    // printf("\n");
 
 
 
-    free(content);
-    free(match);
-    content = 0;
+    // free(content);
+    // free(match);
+    // content = 0;
     match = 0;
 
 }
 
 
+//z algorithm is build_fail_array(match$content)

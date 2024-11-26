@@ -74,7 +74,8 @@
         "stdc++.h": "c",
         "random": "cpp",
         "stdbool.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "regex": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
