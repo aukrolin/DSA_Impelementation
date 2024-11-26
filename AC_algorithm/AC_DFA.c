@@ -12,13 +12,13 @@ typedef struct _trie_node
     struct _trie_node **ptr, *fail;  // array of pointers
 } Trie_node;
 
-Trie_node* new_trie_node(){
+Trie_node* new_trie_node(int label){
     Trie_node* node = (Trie_node*)malloc(sizeof(Trie_node));
     node->isword = false;
     node->ptr = malloc(sizeof(Trie_node *) * CHARSET_SIZE);
     memset(node->ptr, 0, sizeof(Trie_node *) * CHARSET_SIZE);
     node->fail = NULL;
-    node->label = 0;
+    node->label = label;
     return node;
 }
 
@@ -29,7 +29,7 @@ struct trie
 };
 
 void init_trie(struct trie* _trie){
-    _trie->root = new_trie_node();
+    _trie->root = new_trie_node(0);
 }
 
 void insert(struct trie* _trie, const char *str){
@@ -45,7 +45,7 @@ void insert(struct trie* _trie, const char *str){
         if (N->ptr[index]) {
             N = N->ptr[index];
         } else {
-            N = N->ptr[index] = new_trie_node();
+            N = N->ptr[index] = new_trie_node(N->label+1);
         }
         str++;
     }
@@ -114,23 +114,25 @@ void query(struct trie* _trie, const char *str) {
         // 找到匹配的子节点
         if (N->ptr[index]) {
             N = N->ptr[index];
+            // printf("Find: Pattern starts at position %p, length \n", N);
         }
 
-        // printf("Find: Pattern starts at position %p, length \n", N->fail);
-
-        while (N != _trie->root) {
-            if (N->isword) {
-                printf("Matched word: %ld to %ld\n", str - S , str - S- N->label + 1); 
-
-                break;
+        Trie_node* now = N;
+        while (now != _trie->root) {
+            
+            if (now->isword) {
+                // break;
+                printf("Matched word: %ld to %ld\n", str - S- now->label + 1, str - S ); 
             }
-            N = N->fail;  // 如果不是单词结尾，继续检查 fail 链
+            now = now->fail;  // 如果不是单词结尾，继续检查 fail 链
         }
+        // if (now->isword) {
+            // printf("Matched word: %ld to %ld\n", str - S- now->label + 1, str - S ); 
+        // }
 
         str++;
     }
 }
-#include <stdio.h>
 
 void print_fail_links_recursive(Trie_node* node, int depth) {
     if (node == NULL) {
@@ -141,7 +143,7 @@ void print_fail_links_recursive(Trie_node* node, int depth) {
     if (node->fail == node) {
         printf("Node at depth %d (%p): Fail -> (Self)\n", depth, node);
     } else {
-        printf("Node at depth %d (%p): Fail -> %p\n", depth, node,(void*)node->fail);
+        printf("Node at depth %d (%p): Fail -> %p, %s\n", depth, node,(void*)node->fail, (node->isword?"isword":""));
     }
 
     // 遍历所有子节点
@@ -162,7 +164,7 @@ int main() {
     struct trie t;
     init_trie(&t);
     
-    insert(&t, "i");
+    // insert(&t, "i");
     insert(&t, "he");
     insert(&t, "she");
     insert(&t, "his");
@@ -172,9 +174,20 @@ int main() {
     build_fail_link(&t);
     printf("A\n");
 
-    query(&t, "ushersheishis");
     print_fail_links(&t);
+    query(&t, "ushersheishis");
     // 清理内存
     // free_trie_struct(&t);
     return 0;
 }
+//           1
+// 0123456789012
+// ushersheishis
+//  123
+//   23
+//   2345
+//      567
+//       67
+//         8
+//           012
+//            1 
