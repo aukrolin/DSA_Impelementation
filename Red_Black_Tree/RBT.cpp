@@ -6,7 +6,6 @@
 #include <chrono>
 
 
-
 #pragma GCC optimize(3)
 /**
  * @file rb_tree.cpp
@@ -251,12 +250,15 @@ _Cmp cmp;
 
             N->left->parent = N->parent;
             N->left->color = BLACK;
-            N->parent->child[Dir(N)] = N->left;//N
+            if (N->parent )N->parent->child[Dir(N)] = N->left;//NN
+            else root=nil;
             delete N;
         } else if(N->right){
             N->right->parent = N->parent;
             N->right->color = BLACK;
-            N->parent->child[Dir(N)] = N->right;//N
+            if (N->parent ) N->parent->child[Dir(N)] = N->right;//N
+            else root=nil;
+
             delete N;
         }else{
 
@@ -577,50 +579,104 @@ public:
 };
 #include <map>
 #include <unordered_map>
+#include <vector>
+#include <execinfo.h>
+#include <csignal>
+#include <cstdlib>
+/*
+void printStackTrace() {
+    const int maxFrames = 64;  // The maximum number of stack frames to capture
+    void* buffer[maxFrames];
+
+    // Capture the stack frames
+    int frameCount = backtrace(buffer, maxFrames);
+
+    // Print the stack trace
+    char** symbols = backtrace_symbols(buffer, frameCount);
+    if (symbols) {
+        for (int i = 0; i < frameCount; i++) {
+            std::cout << symbols[i] << std::endl;
+        }
+        free(symbols);  // Free the memory allocated by backtrace_symbols
+    } else {
+        std::cerr << "Failed to get stack trace symbols!" << std::endl;
+    }
+}
+void signalHandler(int signum) {
+    printStackTrace();
+    exit(0);
+}
+
+*/
 int main(){
-    int n = (int)1e6;
+    // signal(SIGSEGV, signalHandler);
 
-    Rb_tree<int,int> m;
-    
-    int t=  time(0);
-    srand(t*8/7);
-    auto start = std::chrono::high_resolution_clock::now();
-    for (int i =0; i< n; i++){
-        m[rand()%n] = rand()%n;
+    int n = 1;
+
+    for (int i =1; i<=8; i++) {
+        n*=10;//first time 10^1 
+        printf("==========1e%d=========\n", i);
+        //
+        Rb_tree<int,int> m;
+        
+        int t=  time(0);
+        srand(t*8/7);
+        auto start = std::chrono::high_resolution_clock::now();
+        for (int i =0; i< n; i++){
+            m[rand()%n] = rand()%n;
+        }
+        // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
+        // else std::cout << 1;
+        for (int i =0 ;i < n; i+=2){
+            m.erase(rand()%n);
+            // m[rand()%n] = rand()%n;
+
+        }
+        // for (auto i : m) {
+            // printf("%d", i.first);
+        // }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration = end - start;
+        printf("Spent: %.2fms\n", duration.count() * 1000.0);
+        
+        std::vector<int> to_remove;
+
+        for (auto a:m) to_remove.push_back(a.first);
+        for (auto a:to_remove) m.erase(a); 
+        to_remove.clear();
+
+
+
+
+
+
+
+
+
+        std::map<int,int> m1;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (int i =0; i< n; i++){
+            m1[rand()%n] = rand()%n;
+        }
+        // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
+        // else std::cout << 1;
+        for (int i =0 ;i < n; i+=2){
+            m1.erase(rand()%n);
+            // m1[rand()%n] = rand()%n;
+
+        }
+        // for (auto i : m) {`
+        // }
+        end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration2 = end - start;
+        printf("Spent: %.2fms\n", duration2.count() * 1000.0);
+        printf("%.3lf%%\n", duration.count()/duration2.count());
+        m1.clear();
+
+
+
     }
-    // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
-    // else std::cout << 1;
-    for (int i =0 ;i < n; i+=2){
-        // m.erase(rand()%n);
-        m[rand()%n] = rand()%n;
-
-    }
-    // for (auto i : m) {`
-    // }
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-    printf("Spent: %.2fms\n", duration.count() * 1000.0);
-
-
-    std::unordered_map<int,int> m1;
-
-    start = std::chrono::high_resolution_clock::now();
-    for (int i =0; i< n; i++){
-        m1[rand()%n] = rand()%n;
-    }
-    // if(!m._is_valid_red_black_tree()) std::cout << "Tree Broken" << std::endl; // debug
-    // else std::cout << 1;
-    for (int i =0 ;i < n; i+=2){
-        // m1.erase(rand()%n);
-        m1[rand()%n] = rand()%n;
-
-    }
-    // for (auto i : m) {`
-    // }
-    end = std::chrono::high_resolution_clock::now();
-    duration = end - start;
-    printf("Spent: %.2fms\n", duration.count() * 1000.0);
-    
     // std::cout <<  Rb.size();
 } 
 
