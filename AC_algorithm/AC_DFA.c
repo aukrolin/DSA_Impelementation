@@ -12,6 +12,15 @@ typedef struct _trie_node
     struct _trie_node **ptr, *fail;  // array of pointers
 } Trie_node;
 
+typedef struct _trie_node_list
+{
+    Trie_node *ptr;
+    struct _trie_node_list *next;
+
+}Linked_Tire_Node;
+
+
+
 Trie_node* new_trie_node(int label){
     Trie_node* node = (Trie_node*)malloc(sizeof(Trie_node));
     node->isword = false;
@@ -70,28 +79,45 @@ void free_trie_struct(struct trie* _trie) {
     free(_trie);
 }
 
-#define MAX_BFS 0x10000
 void build_fail_link(struct trie* _trie) {
     Trie_node* N = _trie->root;
-    Trie_node** Queue = malloc(sizeof(Trie_node*) * MAX_BFS);
+    Linked_Tire_Node* Qhead, *Qtail, *tmp;
     
+    Qhead = malloc(sizeof(Linked_Tire_Node*));
+    Qtail = malloc(sizeof(Linked_Tire_Node*));
+    Qtail->next = 0;
+    Qtail->ptr = 0;
+    Qhead->next = Qtail;
+    Qhead->ptr = 0;//init Queue
+
     N->fail = N;
-    int qptr = 0;
     for (int i = 0; i < CHARSET_SIZE; i++) {
         if (N->ptr[i]) {
-            Queue[qptr++] = N->ptr[i];
             N->ptr[i]->fail = N;  // 根节点的子节点的 fail 链指向根节点
+            Qtail->ptr =N->ptr[i];
+            Qtail = Qtail->next = malloc(sizeof(Linked_Tire_Node *));
+            Qtail->next = 0;
+            Qtail->ptr = 0;//these 4 line means push(N->ptr[i]);
         }
     }
 
-    while (qptr != 0) {
-        N = Queue[--qptr];
+
+    while (Qhead->next != Qtail){
+        N = Qhead->next->ptr;
+        tmp = Qhead;
+        Qhead = Qhead->next;
+        free(tmp); tmp =0; //these 4 line is  N = Q.front(), Q.pop();
         for (int i = 0; i < CHARSET_SIZE; i++) {
             if (N->ptr[i]) {
                 Trie_node* now = N->fail;
                 while (now != _trie->root && !now->ptr[i]) now = now->fail;
                 N->ptr[i]->fail = now->ptr[i] ? now->ptr[i] : _trie->root;
-                Queue[qptr++] = N->ptr[i];
+                
+                Qtail->ptr =N->ptr[i];
+                Qtail = Qtail->next = malloc(sizeof(Linked_Tire_Node *));
+                Qtail->next = 0;
+                Qtail->ptr = 0; //these 4 line stands for push(N->ptr[i]);
+        
             }
         }
     }
@@ -191,3 +217,16 @@ int main() {
 //         8
 //           012
 //            1 
+
+
+
+// Node at depth 0 (000001f4ad2422e0): Fail -> (Self)
+// Node at depth 1 (000001f4ad242300): Fail -> 000001f4ad2422e0, 
+// Node at depth 2 (000001f4ad242320): Fail -> 000001f4ad2422e0, isword
+// Node at depth 3 (000001f4ad2423e0): Fail -> 000001f4ad2422e0, 
+// Node at depth 4 (000001f4ad247ad0): Fail -> 000001f4ad242340, isword
+// Node at depth 2 (000001f4ad2423a0): Fail -> 000001f4ad2422e0, 
+// Node at depth 3 (000001f4ad2423c0): Fail -> 000001f4ad242340, isword
+// Node at depth 1 (000001f4ad242340): Fail -> 000001f4ad2422e0, 
+// Node at depth 2 (000001f4ad242360): Fail -> 000001f4ad242300, 
+// Node at depth 3 (000001f4ad242380): Fail -> 000001f4ad242320, isword
